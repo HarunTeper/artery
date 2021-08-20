@@ -170,8 +170,12 @@ void Core::model_callback(const std_msgs::msg::String::SharedPtr msg)
 
 void Core::handleMessage(omnetpp::cMessage* msg)
 {
-    if (msg == m_step_event) {
+    if(!m_step_event->isScheduled())
+    {
         scheduleAt(omnetpp::simTime(), m_null_event);
+        return;
+    }
+    // if (msg == m_step_event) {
         // if (!m_network_loaded) {
         //     // OTS may automatically start a simulation: do not specify a network file then
         //     const char* net_file = par("otsNetworkFile").stringValue();
@@ -200,14 +204,7 @@ void Core::handleMessage(omnetpp::cMessage* msg)
         //     // end of OTS simulation reached
         //     emit(lifecycle_signal, false);
         // }
-    }
-    else if(msg == m_null_event)
-    {
-        if(!m_step_event->isScheduled())
-        {
-            scheduleAt(omnetpp::simTime(), m_null_event);
-        }
-    }
+    // }
 }
 
 void Core::registerRadio(const std::string& gtu_id, RadioEndpoint* radio)
