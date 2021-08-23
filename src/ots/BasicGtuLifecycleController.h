@@ -12,12 +12,18 @@
 #include <string>
 #include <unordered_map>
 
+#include <rclcpp/rclcpp.hpp>
+#include <ots/RosNode.h>
+
 namespace ots
 {
 
 class BasicGtuLifecycleController : public omnetpp::cListener, public omnetpp::cSimpleModule
 {
 public:
+    BasicGtuLifecycleController();
+    virtual ~BasicGtuLifecycleController();
+
     void initialize() override;
     void handleMessage(omnetpp::cMessage*) override;
     void receiveSignal(omnetpp::cComponent*, omnetpp::simsignal_t, bool, omnetpp::cObject* = nullptr) override;

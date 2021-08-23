@@ -13,25 +13,38 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+RosNode RosNode::instance;
+
 RosNode::RosNode() {
 	rclcpp::init(0,nullptr);
-	nodePtr = rclcpp::Node::make_shared("");
+	nodePtr = rclcpp::Node::make_shared("rosNode");
+	// rosThread = new std::thread([this](){rclcpp::spin(nodePtr);});
 }
 
 RosNode::RosNode(std::string nodeName) {
+	// const char* args[1] = { nodeName.c_str() }; 
+	// rclcpp::init(1,args);
 	rclcpp::init(0,nullptr);
 	nodePtr = rclcpp::Node::make_shared(nodeName);
+	// rosThread = new std::thread([this](){rclcpp::spin(nodePtr);});
 }
 
 RosNode::~RosNode() {
+}
+
+RosNode& RosNode::getInstance() {
+	return instance;
 }
 
 rclcpp::Node::SharedPtr RosNode::getRosNode() {
 	return nodePtr;
 }
 
+void RosNode::spin_some(){
+	rclcpp::spin_some(this->getRosNode());
+}
+
 void RosNode::runNode(){
-	rosThread = new std::thread([this](){rclcpp::spin(nodePtr);});
 }
 
 void RosNode::stopNode() {

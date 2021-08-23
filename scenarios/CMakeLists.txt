@@ -13,9 +13,7 @@ endif()
 if(WITH_TRANSFUSION)
     add_subdirectory(transfusion)
 endif()
-if(WITH_OTS)
-    add_opp_run(ots_demo WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ots-demo)
-endif()
+add_opp_run(ots_demo WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ots-demo)
 
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mt-its2017/omnetpp.ini AND WITH_STORYBOARD)

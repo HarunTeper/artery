@@ -22,7 +22,7 @@ macro(find_ros)
     endforeach()
 endmacro()
 
-find_ros(rclcpp gazebo_msgs)
+find_ros(rclcpp gazebo_msgs ros_its_msgs)
 target_include_directories(ots PUBLIC ${ROS_INCLUDE_DIRS})
 target_link_libraries(ots PUBLIC ${ROS_LIBRARIES})
 

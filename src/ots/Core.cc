@@ -12,9 +12,6 @@
 #include <fstream>
 #include <sstream>
 
-
-using namespace std::placeholders;
-
 namespace ots
 {
 
@@ -66,7 +63,7 @@ const std::string& getReplyMessage(const sim0mqpp::Message& msg)
 } // namespace
 
 
-Core::Core() : rosNode("artery_core_node")
+Core::Core() : rosNode(RosNode::getInstance())
 {
     m_zmq_context = zmq_ctx_new();
     if (!m_zmq_context) {
@@ -80,8 +77,6 @@ Core::Core() : rosNode("artery_core_node")
 
     m_step_event = new omnetpp::cMessage("OTS step");
     m_null_event = new omnetpp::cMessage("OTS null");
-
-    rosNode.runNode();
 }
 
 Core::~Core()
@@ -118,30 +113,32 @@ void Core::initialize()
     m_stop_time = par("otsRunDuration");
     m_sync_time_notification = par("syncTimeOnNotification");
 
+    
+
     clockSub = rosNode.getRosNode()->create_subscription<rosgraph_msgs::msg::Clock>("/clock",10,std::bind(&Core::clock_callback,this,std::placeholders::_1));
-    modelAddSub = rosNode.getRosNode()->create_subscription<std_msgs::msg::String>("/model_states",10,std::bind(&Core::model_callback,this,std::placeholders::_1));
-    modelClient = rosNode.getRosNode()->create_client<gazebo_msgs::srv::GetModelList>("/get_model_list");
+    // modelAddSub = rosNode.getRosNode()->create_subscription<std_msgs::msg::String>("/model_states",10,std::bind(&Core::model_callback,this,std::placeholders::_1));
+    // modelClient = rosNode.getRosNode()->create_client<gazebo_msgs::srv::GetModelList>("/get_model_list");
 }
 
 void Core::clock_callback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
-{
+{   
     std::cout << msg->clock.sec << std::endl;
     std::cout << msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000 << std::endl;
     if(!m_step_event->isScheduled())
     {
-        scheduleAt(omnetpp::SimTime(msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000), m_step_event);
+        scheduleAt(msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000, m_step_event);
     }
 
-    auto request = std::make_shared<gazebo_msgs::srv::GetModelList::Request>();
-    while (!modelClient->wait_for_service()) 
-    {
-        if (!rclcpp::ok())
-        {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
-        }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
-    }
-    auto result = modelClient->async_send_request(request,std::bind(&Core::model_srv_callback,this,std::placeholders::_1));
+    // auto request = std::make_shared<gazebo_msgs::srv::GetModelList::Request>();
+    // while (!modelClient->wait_for_service())
+    // {
+    //     if (!rclcpp::ok())
+    //     {
+    //         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+    //     }
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+    // }
+    // auto result = modelClient->async_send_request(request,std::bind(&Core::model_srv_callback,this,std::placeholders::_1));
 }
 
 void Core::model_srv_callback(const rclcpp::Client<gazebo_msgs::srv::GetModelList>::SharedFuture future)
@@ -166,6 +163,7 @@ void Core::model_srv_callback(const rclcpp::Client<gazebo_msgs::srv::GetModelLis
 void Core::model_callback(const std_msgs::msg::String::SharedPtr msg)
 {
     std::cout << msg->data << std::endl;
+    emit(gtu_add_signal, msg->data.c_str());
 }   
 
 void Core::handleMessage(omnetpp::cMessage* msg)
@@ -174,6 +172,12 @@ void Core::handleMessage(omnetpp::cMessage* msg)
     {
         scheduleAt(omnetpp::simTime(), m_null_event);
         return;
+    }
+    if(!m_running)
+    {
+        emit(lifecycle_signal, true);
+        m_network_loaded = true;
+        m_running=true;
     }
     // if (msg == m_step_event) {
         // if (!m_network_loaded) {

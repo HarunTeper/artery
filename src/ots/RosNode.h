@@ -6,27 +6,31 @@
 #include <mutex>
 #include <vector>
 
+#include <omnetpp/cobject.h>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
 
-class RosNode {
+class RosNode : omnetpp::cObject {
 public:
 	RosNode();
 	RosNode(std::string name);
 	~RosNode();
 
+	static RosNode &getInstance();
+
 	rclcpp::Node::SharedPtr getRosNode() ;
 
+	void spin_some();
 	void runNode();
 	void stopNode();
 
 private:
+	static RosNode instance;
+
 	std::string name;
 	rclcpp::Node::SharedPtr nodePtr;
 	std::thread* rosThread;
-
-	std::vector<rclcpp::Subscription<void*>::SharedPtr> nodeSubscribers;
-	std::vector<rclcpp::Publisher<void*>::SharedPtr> nodePublishers;
 };
 
 #endif /* SIMULATION_H */

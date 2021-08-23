@@ -87,8 +87,8 @@ private:
 
     RosNode rosNode;
     rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr clockSub;
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr modelAddSub;
-    rclcpp::Client<gazebo_msgs::srv::GetModelList>::SharedPtr modelClient;
+    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr modelAddSub;
+    // rclcpp::Client<gazebo_msgs::srv::GetModelList>::SharedPtr modelClient;
 
 };
 

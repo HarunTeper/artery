@@ -31,6 +31,15 @@ private:
 
 } // namespace
 
+BasicGtuLifecycleController::BasicGtuLifecycleController()
+{
+}
+
+BasicGtuLifecycleController::~BasicGtuLifecycleController()
+{
+    
+}
+
 void BasicGtuLifecycleController::initialize()
 {
     if (auto emitter = getParentModule()) {
@@ -72,7 +81,9 @@ void BasicGtuLifecycleController::receiveSignal(omnetpp::cComponent*, omnetpp::s
 
 void BasicGtuLifecycleController::receiveSignal(omnetpp::cComponent*, omnetpp::simsignal_t signal, const char* id, omnetpp::cObject*)
 {
+    std::cout << "add signal received" << std::endl;
     if (signal == otsGtuAddSignal) {
+        std::cout << "add signal received if" << std::endl;
         addGtu(id);
     } else if (signal == otsGtuRemoveSignal) {
         removeGtu(id);
@@ -108,6 +119,7 @@ void BasicGtuLifecycleController::removeGtu(const std::string& id)
 void BasicGtuLifecycleController::updateGtu(const GtuObject& obj)
 {
     Enter_Method_Silent();
+    std::cout << "entered updateGtu" << std::endl;
     GtuSink* sink = getSink(obj.getId());
     if (!sink) {
         auto pending = m_pending_gtus.find(obj.getId());
