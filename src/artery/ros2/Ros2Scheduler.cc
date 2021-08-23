@@ -51,13 +51,10 @@ cEvent* Ros2Scheduler::takeNextEvent()
             }
             else
             {
-                if (event->getArrivalTime() == gazebo_clock) {
-                    rosNode.spin_some();
-                }
+                rosNode.spin_some();
                 while (event->getArrivalTime() > gazebo_clock) {
                     rosNode.spin_some();
                 }
-                rosNode.spin_some();
             }
             std::cout << event << event->getArrivalTime() << std::endl;
             return sim->getFES()->removeFirst();
