@@ -122,8 +122,7 @@ void Core::initialize()
 
 void Core::clock_callback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {   
-    std::cout << msg->clock.sec << std::endl;
-    std::cout << msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000 << std::endl;
+    std::cout << "schedule step at " << msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000 << std::endl;
     if(!m_step_event->isScheduled())
     {
         scheduleAt(msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000, m_step_event);
@@ -170,6 +169,7 @@ void Core::handleMessage(omnetpp::cMessage* msg)
 {
     if(!m_step_event->isScheduled())
     {
+        std::cout << "schedule null at " << omnetpp::simTime() << std::endl;
         scheduleAt(omnetpp::simTime(), m_null_event);
         return;
     }
