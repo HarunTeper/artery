@@ -76,6 +76,7 @@ void Middleware::initialize(int stage)
         mFacilities.register_const(&mStationType);
         mFacilities.register_const(mMultiChannelPolicy.get());
         mFacilities.register_const(&mNetworkInterfaceTable);
+        std::cout << findHost() << std::endl;
         mFacilities.register_const(inet::getModuleFromPar<PositionProvider>(par("positionProviderModule"), findHost()));
 
         initializeServices(InitStages::Self);

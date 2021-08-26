@@ -3,6 +3,9 @@
     <service type="artery.application.CaService">
         <listener port="2001" />
     </service>
+    <service type="artery.ros2.Ros2Service">
+        <listener port="2002" />
+    </service>
     <service type="artery.ots.GtuProxyService">
         <listener port="3001" />
     </service>

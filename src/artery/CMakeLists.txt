@@ -171,7 +171,11 @@ if(WITH_TESTBED)
     add_subdirectory(testbed)
 endif()
 
-add_subdirectory(ros2)
+set_property(TARGET core APPEND PROPERTY SOURCES
+    ros2/Ros2Scheduler.cc
+    ros2/Ros2Service.cc
+)
+target_link_libraries(core PUBLIC ots)
 
 install(TARGETS core LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 set_property(TARGET core APPEND PROPERTY INSTALL_NED_FOLDERS ${CMAKE_INSTALL_DATADIR}/ned/artery)

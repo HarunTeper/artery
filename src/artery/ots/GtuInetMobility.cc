@@ -24,6 +24,14 @@ const simsignal_t gtuPositionChangedSignal = cComponent::registerSignal("gtuPosi
 
 } // namespace
 
+GtuInetMobility::GtuInetMobility() : rosNode(RosNode::getInstance())
+{
+}
+
+GtuInetMobility::~GtuInetMobility()
+{
+}
+
 int GtuInetMobility::numInitStages() const
 {
     return inet::INITSTAGE_PHYSICAL_ENVIRONMENT_2 + 1;
@@ -38,6 +46,7 @@ void GtuInetMobility::initialize(int stage)
         omnetpp::createWatch("speed", mSpeed);
         omnetpp::createWatch("orientation", mOrientation);
         omnetpp::createWatch("GTU ID", mLastGtuObject.getId());
+        camSub = rosNode.getRosNode()->create_subscription<etsi_its_msgs::msg::CAM>(mLastGtuObject.getId()+"/camTX",10,std::bind(&GtuInetMobility::cam_callback,this,std::placeholders::_1));
     } else if (stage == inet::INITSTAGE_PHYSICAL_ENVIRONMENT_2) {
         if (mVisualRepresentation) {
             auto target = mVisualRepresentation->getParentModule();
@@ -45,6 +54,30 @@ void GtuInetMobility::initialize(int stage)
         }
         updateVisualRepresentation();
     }
+    
+}
+
+void GtuInetMobility::cam_callback(const etsi_its_msgs::msg::CAM::SharedPtr msg)
+{
+    // std::cout << "received cam" << std::endl;
+    // std::cout << "from " << mLastGtuObject.getId() << std::endl;
+    // std::cout << msg->longitude << std::endl;
+    // std::cout << msg->latitude << std::endl;
+    // std::cout << msg->altitude << std::endl;
+    //std::cout << msg->heading << std::endl;
+    // std::cout << msg->yaw_rate << std::endl;
+    // std::cout << msg->speed << std::endl;
+    // std::cout << msg->acceleration << std::endl;
+    // std::cout << msg->drive_direction << std::endl;
+    // std::cout << msg->curvature << std::endl;
+    ots::GtuObject gtu;
+    gtu.setId(mLastGtuObject.getId());
+    gtu.setType("PASSENGER_CAR");
+    gtu.setPosition({msg->reference_position.longitude, msg->reference_position.latitude, 0.0 });
+    gtu.setHeadingRad(msg->high_frequency_container.heading.value);
+    gtu.setSpeed(msg->high_frequency_container.speed.value);
+    gtu.setAcceleration(msg->high_frequency_container.longitudinal_acceleration.value);
+    update(gtu);
 }
 
 double GtuInetMobility::getMaxSpeed() const

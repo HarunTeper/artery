@@ -31,7 +31,7 @@ private:
 
 } // namespace
 
-BasicGtuLifecycleController::BasicGtuLifecycleController()
+BasicGtuLifecycleController::BasicGtuLifecycleController() : rosNode(RosNode::getInstance())
 {
 }
 
@@ -52,6 +52,29 @@ void BasicGtuLifecycleController::initialize()
     m_creation_policy = dynamic_cast<GtuCreationPolicy*>(getSubmodule("creationPolicy"));
     if (!m_creation_policy) {
         throw cRuntimeError("missing GtuCreationPolicy");
+    }
+
+    robotNameSub = rosNode.getRosNode()->create_subscription<std_msgs::msg::String>("/model_states",10,std::bind(&BasicGtuLifecycleController::model_callback,this,std::placeholders::_1));
+}
+
+void BasicGtuLifecycleController::model_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+    // std::cout << msg->data << std::endl;
+    GtuSink* sink = getSink(msg->data);
+    if(!sink)
+    {
+        GtuObject gtu;
+        gtu.setId(msg->data);
+        gtu.setType("PASSENGER_CAR");
+        gtu.setPosition({ 0, 0, 0 });
+        gtu.setHeadingRad(0);
+        gtu.setSpeed(0);
+        gtu.setAcceleration(0);
+        GtuSink* sink = getSink(gtu.getId());
+        if (!sink) 
+        {
+            createSink(gtu);
+        }
     }
 }
 
@@ -81,9 +104,7 @@ void BasicGtuLifecycleController::receiveSignal(omnetpp::cComponent*, omnetpp::s
 
 void BasicGtuLifecycleController::receiveSignal(omnetpp::cComponent*, omnetpp::simsignal_t signal, const char* id, omnetpp::cObject*)
 {
-    std::cout << "add signal received" << std::endl;
     if (signal == otsGtuAddSignal) {
-        std::cout << "add signal received if" << std::endl;
         addGtu(id);
     } else if (signal == otsGtuRemoveSignal) {
         removeGtu(id);
@@ -119,7 +140,6 @@ void BasicGtuLifecycleController::removeGtu(const std::string& id)
 void BasicGtuLifecycleController::updateGtu(const GtuObject& obj)
 {
     Enter_Method_Silent();
-    std::cout << "entered updateGtu" << std::endl;
     GtuSink* sink = getSink(obj.getId());
     if (!sink) {
         auto pending = m_pending_gtus.find(obj.getId());

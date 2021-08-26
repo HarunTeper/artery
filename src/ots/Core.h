@@ -71,6 +71,7 @@ private:
     bool m_running = false;
     omnetpp::cMessage* m_step_event = nullptr;
     omnetpp::cMessage* m_null_event = nullptr;
+    omnetpp::SimTime delay;
     omnetpp::SimTime m_step_length;
     omnetpp::SimTime m_stop_time;
     omnetpp::SimTime m_ots_time;
@@ -87,7 +88,7 @@ private:
 
     RosNode rosNode;
     rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr clockSub;
-    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr modelAddSub;
+    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robotNameSub;
     // rclcpp::Client<gazebo_msgs::srv::GetModelList>::SharedPtr modelClient;
 
 };

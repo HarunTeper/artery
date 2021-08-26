@@ -68,4 +68,14 @@ void GtuPositionProvider::updatePositionFix()
     emit(positionFixSignal, &tmp);
 }
 
+Position GtuPositionProvider::getCartesianPosition() const
+{
+    return mMobility->getPosition();
+}
+
+GeoPosition GtuPositionProvider::getGeodeticPosition() const
+{
+    return mMobility->getGeoPosition();
+}
+
 } // namespace artery

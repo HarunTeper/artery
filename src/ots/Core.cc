@@ -109,6 +109,7 @@ void Core::initialize()
 
     // schedule first OTS step
     m_step_length = par("stepLength");
+    delay = par("delay");
 
     m_stop_time = par("otsRunDuration");
     m_sync_time_notification = par("syncTimeOnNotification");
@@ -116,13 +117,13 @@ void Core::initialize()
     
 
     clockSub = rosNode.getRosNode()->create_subscription<rosgraph_msgs::msg::Clock>("/clock",10,std::bind(&Core::clock_callback,this,std::placeholders::_1));
-    // modelAddSub = rosNode.getRosNode()->create_subscription<std_msgs::msg::String>("/model_states",10,std::bind(&Core::model_callback,this,std::placeholders::_1));
+    // robotNameSub = rosNode.getRosNode()->create_subscription<std_msgs::msg::String>("/model_states",10,std::bind(&Core::model_callback,this,std::placeholders::_1));
     // modelClient = rosNode.getRosNode()->create_client<gazebo_msgs::srv::GetModelList>("/get_model_list");
 }
 
 void Core::clock_callback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {   
-    std::cout << "schedule step at " << msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000 << std::endl;
+    // std::cout << "schedule step at " << msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000 << std::endl;
     if(!m_step_event->isScheduled())
     {
         scheduleAt(msg->clock.sec+(double)(msg->clock.nanosec/1000000)/1000, m_step_event);
@@ -162,23 +163,57 @@ void Core::model_srv_callback(const rclcpp::Client<gazebo_msgs::srv::GetModelLis
 void Core::model_callback(const std_msgs::msg::String::SharedPtr msg)
 {
     std::cout << msg->data << std::endl;
-    emit(gtu_add_signal, msg->data.c_str());
+    EV_DETAIL << "add GTU " << msg->data << "\n";
+    emit(gtu_add_signal, (msg->data).c_str());
+
+    GtuObject gtu;
+    gtu.setId(msg->data);
+    gtu.setType("2");
+    gtu.setPosition({ 0.0, 0.0, 0.0 });
+    gtu.setHeadingRad(0.0);
+    gtu.setSpeed(0.0);
+    gtu.setAcceleration(0.0);
+    emit(gtu_position_signal, &gtu);
+    EV_DETAIL << "GTU position update for ID " << msg->data << "\n";
+
+
+    // emit(gtu_add_signal, msg->data.c_str());
+    // auto id = msg.get_payload<std::string>(0);
+    // auto type = msg.get_payload<std::string>(1);
+    // auto pos = msg.get_payload<sim0mqpp::VectorQuantity<double>, sim0mqpp::Unit::Position>(2);
+    // auto heading = msg.get_payload<sim0mqpp::Unit::Direction>(3);
+    // auto speed = msg.get_payload<sim0mqpp::Unit::Speed>(4);
+    // auto accel = msg.get_payload<sim0mqpp::Unit::Acceleration>(5);
+
+    // if (id && type && pos && pos->values().size() == 3 && heading && speed && accel) {
+    //     GtuObject gtu;
+    //     gtu.setId(*id);
+    //     gtu.setType(*type);
+    //     gtu.setPosition({ pos->values()[0], pos->values()[1], pos->values()[2] });
+    //     gtu.setHeadingRad(heading->value());
+    //     gtu.setSpeed(speed->value());
+    //     gtu.setAcceleration(accel->value());
+    //     emit(gtu_position_signal, &gtu);
+    //     EV_DETAIL << "GTU position update for ID " << *id << "\n";
+    // } else {
+    //     EV_ERROR << "received broken GTU position\n";
+    // }
 }   
 
 void Core::handleMessage(omnetpp::cMessage* msg)
 {
     if(!m_step_event->isScheduled())
     {
-        std::cout << "schedule null at " << omnetpp::simTime() << std::endl;
+        // std::cout << "schedule null at " << omnetpp::simTime() << std::endl;
         scheduleAt(omnetpp::simTime(), m_null_event);
         return;
     }
-    if(!m_running)
-    {
-        emit(lifecycle_signal, true);
-        m_network_loaded = true;
-        m_running=true;
-    }
+    // if(!m_running)
+    // {
+    //     emit(lifecycle_signal, true);
+    //     m_network_loaded = true;
+    //     m_running=true;
+    // }
     // if (msg == m_step_event) {
         // if (!m_network_loaded) {
         //     // OTS may automatically start a simulation: do not specify a network file then

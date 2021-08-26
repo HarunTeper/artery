@@ -13,6 +13,8 @@
 #include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
 #include <ots/RosNode.h>
 
 namespace ots
@@ -49,6 +51,10 @@ private:
     std::map<std::string, GtuSink*> m_gtu_sinks;
     std::unordered_map<std::string, std::unique_ptr<GtuObject>> m_pending_gtus;
     GtuCreationPolicy* m_creation_policy = nullptr;
+
+    RosNode rosNode;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robotNameSub;
+    void model_callback(const std_msgs::msg::String::SharedPtr msg);
 };
 
 } // namespace ots

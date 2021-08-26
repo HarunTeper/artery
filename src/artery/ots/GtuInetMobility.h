@@ -6,6 +6,12 @@
 #include <inet/mobility/contract/IMobility.h>
 #include <omnetpp/csimplemodule.h>
 
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <etsi_its_msgs/msg/cam.hpp>
+
+#include <ots/RosNode.h>
+
 namespace inet {
     class CanvasProjection;
     class IGeographicCoordinateSystem;
@@ -19,6 +25,9 @@ class GtuInetMobility :
     public omnetpp::cSimpleModule
 {
 public:
+    GtuInetMobility();
+    virtual ~GtuInetMobility();
+
     void initialize(int stage) override;
     int numInitStages() const override;
 
@@ -52,6 +61,11 @@ private:
     omnetpp::cModule* mVisualRepresentation = nullptr;
     const inet::CanvasProjection* mCanvasProjection = nullptr;
     const inet::IGeographicCoordinateSystem* mCoordinateSystem = nullptr;
+
+    RosNode rosNode;
+    rclcpp::Subscription<etsi_its_msgs::msg::CAM>::SharedPtr camSub;
+    void cam_callback(const etsi_its_msgs::msg::CAM::SharedPtr msg);
+
 };
 
 } // namespace artery
